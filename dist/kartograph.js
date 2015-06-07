@@ -19,7 +19,7 @@
 
 
 (function() {
-  var $, Aitoff, Azimuthal, BBox, Balthasart, Behrmann, BlurFilter, Bubble, CEA, CantersModifiedSinusoidalI, Circle, CohenSutherland, Conic, Cylindrical, EckertIV, EquidistantAzimuthal, Equirectangular, Filter, GallPeters, GlowFilter, GoodeHomolosine, Hatano, HoboDyer, HtmlLabel, Icon, K, Kartograph, LAEA, LAEA_Alaska, LAEA_Hawaii, LAEA_USA, LCC, LabeledBubble, LatLon, Line, LinearScale, LogScale, LonLat, Loximuthal, MapLayer, MapLayerPath, Mercator, Mollweide, NaturalEarth, Nicolosi, Orthographic, Path, PieChart, Proj, PseudoConic, PseudoCylindrical, QuantileScale, REbraces, REcomment_string, REfull, REmunged, Robinson, Satellite, Scale, Sinusoidal, SqrtScale, StackedBarChart, Stereographic, SvgLabel, Symbol, SymbolGroup, View, WagnerIV, WagnerV, Winkel3, drawPieChart, filter, geom, hex2rgb, kartograph, log, map_layer_path_uid, munge, munged, parsedeclarations, proj, resolve, restore, root, scale, uid, warn, __area, __is_clockwise, __point_in_polygon, __type, _base, _base1, _ref, _ref1, _ref10, _ref11, _ref12, _ref13, _ref14, _ref15, _ref16, _ref17, _ref18, _ref19, _ref2, _ref20, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9,
+  var $, Aitoff, Azimuthal, BBox, Balthasart, Behrmann, BlurFilter, Bubble, CEA, CantersModifiedSinusoidalI, Circle, CohenSutherland, Conic, Cylindrical, EckertIV, EquidistantAzimuthal, Equirectangular, Filter, GallPeters, GlowFilter, GoodeHomolosine, Hatano, HoboDyer, HtmlLabel, Icon, Kartograph, LAEA, LCC, LabeledBubble, LatLon, Line, LinearScale, LogScale, LonLat, Loximuthal, MapLayer, MapLayerPath, Mercator, Mollweide, NaturalEarth, Nicolosi, Orthographic, Path, PieChart, Proj, PseudoConic, PseudoCylindrical, QuantileScale, REbraces, REcomment_string, REfull, REmunged, Robinson, Satellite, Scale, Sinusoidal, SqrtScale, StackedBarChart, Stereographic, SvgLabel, Symbol, SymbolGroup, View, WagnerIV, WagnerV, Winkel3, drawPieChart, filter, hex2rgb, kartograph, log, map_layer_path_uid, munge, munged, parsedeclarations, resolve, restore, root, uid, warn, __point_in_polygon, __proj, __type, _base, _base1, _ref, _ref1, _ref10, _ref11, _ref12, _ref13, _ref14, _ref15, _ref16, _ref17, _ref18, _ref19, _ref2, _ref20, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -27,9 +27,9 @@
 
   root = typeof exports !== "undefined" && exports !== null ? exports : this;
 
-  kartograph = root.$K = (_ref = root.kartograph) != null ? _ref : root.kartograph = {};
+  kartograph = root.$K = (_ref = root.Kartograph) != null ? _ref : root.Kartograph = {};
 
-  kartograph.version = "0.8.7";
+  kartograph.version = "0.6.1";
 
   $ = root.jQuery;
 
@@ -240,7 +240,7 @@
     y = Number(xml.getAttribute('y'));
     w = Number(xml.getAttribute('w'));
     h = Number(xml.getAttribute('h'));
-    return new BBox(x, y, w, h);
+    return new kartograph.BBox(x, y, w, h);
   };
 
   kartograph.BBox = BBox;
@@ -411,6 +411,7 @@
       vp = me.viewport;
       cnt = me.container;
       paper = Raphael(cnt[0], vp.width, vp.height);
+      
       svg = $(paper.canvas);
       svg.css({
         position: 'absolute',
@@ -453,7 +454,7 @@
       return div;
     };
 
-    Kartograph.prototype.load = function(mapurl, callback, opts) {
+    Kartograph.prototype.loadMap = function(mapurl, callback, opts) {
       var def, me, _base2, _ref4;
 
       me = this;
@@ -480,10 +481,6 @@
         });
       }
       return def.promise();
-    };
-
-    Kartograph.prototype.loadMap = function() {
-      return this.load.apply(this, arguments);
     };
 
     Kartograph.prototype.setMap = function(svg, opts) {
@@ -528,12 +525,12 @@
         me.viewport = new BBox(0, 0, w, h);
       }
       vp = me.viewport;
-      me.viewAB = AB = View.fromXML($view[0]);
+      me.viewAB = AB = kartograph.View.fromXML($view[0]);
       padding = (_ref5 = me.opts.padding) != null ? _ref5 : 0;
       halign = (_ref6 = me.opts.halign) != null ? _ref6 : 'center';
       valign = (_ref7 = me.opts.valign) != null ? _ref7 : 'center';
       zoom = (_ref8 = me.opts.zoom) != null ? _ref8 : 1;
-      me.viewBC = new View(me.viewAB.asBBox(), vp.width * zoom, vp.height * zoom, padding, halign, valign);
+      me.viewBC = new kartograph.View(me.viewAB.asBBox(), vp.width * zoom, vp.height * zoom, padding, halign, valign);
       me.proj = kartograph.Proj.fromXML($('proj', $view)[0]);
       if (me.mapLoadCallback != null) {
         me.mapLoadCallback(me);
@@ -544,7 +541,7 @@
     };
 
     Kartograph.prototype.addLayer = function(id, opts) {
-      var $paths, chunkSize, iter, layer, layer_id, layer_paper, me, moveOn, nextPaths, path_id, rows, src_id, svgLayer, titles, _ref4, _ref5, _ref6;
+      var $paths, chunkSize, iter, layer, layer_id, me, moveOn, nextPaths, path_id, rows, src_id, svgLayer, titles, _ref4, _ref5, _ref6;
 
       if (opts == null) {
         opts = {};
@@ -571,10 +568,6 @@
       } else {
         opts = {};
       }
-      layer_paper = me.paper;
-      if (opts.add_svg_layer) {
-        layer_paper = me.createSVGLayer();
-      }
       if (layer_id == null) {
         layer_id = src_id;
       }
@@ -582,7 +575,7 @@
       if (svgLayer.length === 0) {
         return;
       }
-      layer = new MapLayer(layer_id, path_id, me, opts.filter, layer_paper);
+      layer = new MapLayer(layer_id, path_id, me, opts.filter);
       $paths = $('*', svgLayer[0]);
       rows = $paths.length;
       chunkSize = (_ref6 = opts.chunks) != null ? _ref6 : rows;
@@ -753,7 +746,7 @@
       forces redraw of every layer
       */
 
-      var cnt, halign, id, layer, me, padding, sg, valign, vp, zoom, _i, _len, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9;
+      var cnt, halign, id, layer, me, padding, sg, valign, vp, zoom, _i, _len, _ref4, _ref5, _ref6, _ref7, _ref8;
 
       me = this;
       cnt = me.container;
@@ -763,31 +756,25 @@
       if (h == null) {
         h = cnt.height();
       }
-      me.viewport = vp = new BBox(0, 0, w, h);
+      me.viewport = vp = new kartograph.BBox(0, 0, w, h);
       if (me.paper != null) {
         me.paper.setSize(vp.width, vp.height);
       }
-      _ref4 = me.layers;
-      for (id in _ref4) {
-        layer = _ref4[id];
-        if ((layer.paper != null) && layer.paper !== me.paper) {
-          layer.paper.setSize(vp.width, vp.height);
-        }
-      }
-      padding = (_ref5 = me.opts.padding) != null ? _ref5 : 0;
-      halign = (_ref6 = me.opts.halign) != null ? _ref6 : 'center';
-      valign = (_ref7 = me.opts.valign) != null ? _ref7 : 'center';
+      vp = me.viewport;
+      padding = (_ref4 = me.opts.padding) != null ? _ref4 : 0;
+      halign = (_ref5 = me.opts.halign) != null ? _ref5 : 'center';
+      valign = (_ref6 = me.opts.valign) != null ? _ref6 : 'center';
       zoom = me.opts.zoom;
-      me.viewBC = new View(me.viewAB.asBBox(), vp.width * zoom, vp.height * zoom, padding, halign, valign);
-      _ref8 = me.layers;
-      for (id in _ref8) {
-        layer = _ref8[id];
+      me.viewBC = new kartograph.View(me.viewAB.asBBox(), vp.width * zoom, vp.height * zoom, padding, halign, valign);
+      _ref7 = me.layers;
+      for (id in _ref7) {
+        layer = _ref7[id];
         layer.setView(me.viewBC);
       }
       if (me.symbolGroups != null) {
-        _ref9 = me.symbolGroups;
-        for (_i = 0, _len = _ref9.length; _i < _len; _i++) {
-          sg = _ref9[_i];
+        _ref8 = me.symbolGroups;
+        for (_i = 0, _len = _ref8.length; _i < _len; _i++) {
+          sg = _ref8[_i];
           sg.onResize();
         }
       }
@@ -798,10 +785,10 @@
 
       me = this;
       if (lonlat.length === 2) {
-        lonlat = new LonLat(lonlat[0], lonlat[1]);
+        lonlat = new kartograph.LonLat(lonlat[0], lonlat[1]);
       }
       if (lonlat.length === 3) {
-        lonlat = new LonLat(lonlat[0], lonlat[1], lonlat[2]);
+        lonlat = new kartograph.LonLat(lonlat[0], lonlat[1], lonlat[2]);
       }
       a = me.proj.project(lonlat.lon, lonlat.lat, lonlat.alt);
       return me.viewBC.project(me.viewAB.project(a));
@@ -867,7 +854,7 @@
       var me;
 
       me = this;
-      if (!Raphael.svg) {
+      if (navigator.appName == 'Microsoft Internet Explorer') {
         return $.ajax({
           url: url,
           dataType: 'text',
@@ -950,19 +937,15 @@
 
   })();
 
-  K = kartograph;
-
-  root.kartograph = function(container, width, height) {
-    return new Kartograph(container, width, height);
-  };
+  kartograph.Kartograph = Kartograph;
 
   kartograph.map = function(container, width, height) {
+    /* short-hand constructor
+    */
     return new Kartograph(container, width, height);
   };
 
   kartograph.__mapCache = {};
-
-  $.extend(root.kartograph, K);
 
   /*
       kartograph - a svg mapping library 
@@ -1029,9 +1012,9 @@
 
   })(LonLat);
 
-  root.kartograph.LonLat = LonLat;
+  kartograph.LonLat = LonLat;
 
-  root.kartograph.LatLon = LatLon;
+  kartograph.LatLon = LatLon;
 
   /*
       kartograph - a svg mapping library 
@@ -1053,13 +1036,13 @@
 
 
   MapLayer = (function() {
-    function MapLayer(layer_id, path_id, map, filter, paper) {
+    function MapLayer(layer_id, path_id, map, filter) {
       var me;
 
       me = this;
       me.id = layer_id;
       me.path_id = path_id;
-      me.paper = paper != null ? paper : map.paper;
+      me.paper = map.paper;
       me.view = map.viewBC;
       me.map = map;
       me.filter = filter;
@@ -1072,7 +1055,7 @@
       if ((_ref4 = me.paths) == null) {
         me.paths = [];
       }
-      layerPath = new MapLayerPath(svg_path, me.id, me, titles);
+      layerPath = new MapLayerPath(svg_path, me.id, me.map, titles);
       if (__type(me.filter) === 'function') {
         if (me.filter(layerPath.data) === false) {
           layerPath.remove();
@@ -1178,47 +1161,38 @@
       return _results;
     };
 
-    MapLayer.prototype.style = function(props, value, duration, delay) {
-      var key, me;
+    MapLayer.prototype.style = function(prop, value, duration, delay) {
+      var anim, at, dly, dur, key, me, path, val, _i, _len, _ref4;
 
       me = this;
-      if (__type(props) === "string") {
-        key = props;
-        props = {};
-        props[key] = value;
-      } else if (__type(props) === "object") {
-        delay = duration;
-        duration = value;
+      if (__type(prop) === "object") {
+        for (key in prop) {
+          val = prop[key];
+          me.style(key, val);
+        }
+        return me;
       }
       if (duration == null) {
         duration = 0;
       }
-      $.each(me.paths, function(i, path) {
-        var anim, attrs, dly, dur, prop, val;
-
-        attrs = {};
-        for (prop in props) {
-          val = props[prop];
-          attrs[prop] = resolve(val, path.data);
-        }
+      if (delay == null) {
+        delay = 0;
+      }
+      _ref4 = me.paths;
+      for (_i = 0, _len = _ref4.length; _i < _len; _i++) {
+        path = _ref4[_i];
+        val = resolve(value, path.data);
         dur = resolve(duration, path.data);
         dly = resolve(delay, path.data);
-        if (dly == null) {
-          dly = 0;
-        }
         if (dur > 0) {
-          anim = Raphael.animation(attrs, dur * 1000);
-          return path.svgPath.animate(anim.delay(dly * 1000));
+          at = {};
+          at[prop] = val;
+          anim = Raphael.animation(at, dur * 1000);
+          path.svgPath.animate(anim.delay(dly * 1000));
         } else {
-          if (delay === 0) {
-            return setTimeout(function() {
-              return path.svgPath.attr(attrs);
-            }, 0);
-          } else {
-            return path.svgPath.attr(attrs);
-          }
+          path.svgPath.attr(prop, val);
         }
-      });
+      }
       return me;
     };
 
@@ -1263,7 +1237,7 @@
 
         cfg = {
           position: {
-            target: 'mouse',
+            target: "mouse",
             viewport: $(window),
             adjust: {
               x: 7,
@@ -1271,7 +1245,7 @@
             }
           },
           show: {
-            delay: delay != null ? delay : 20
+            delay: delay != null ? delay : 20,
           },
           events: {
             show: function(evt, api) {
@@ -1287,7 +1261,7 @@
             cfg.content.text = tt;
           } else if ($.isArray(tt)) {
             cfg.content.title = tt[0];
-            cfg.content.text = tt[1];
+            cfg.content.text = ""//tt[1];
           }
         } else {
           cfg.content.text = 'n/a';
@@ -1364,21 +1338,17 @@
 
 
   MapLayerPath = (function() {
-    function MapLayerPath(svg_path, layer_id, layer, titles) {
-      var attr, data, i, map, me, paper, path, title, uid, v, view, vn, _i, _ref4;
+    function MapLayerPath(svg_path, layer_id, map, titles) {
+      var attr, data, i, me, paper, path, title, uid, v, view, vn, _i, _ref4;
 
       me = this;
-      paper = layer.paper;
-      map = layer.map;
+      paper = map.paper;
       view = map.viewBC;
       me.path = path = kartograph.geom.Path.fromSVG(svg_path);
       me.vpath = view.projectPath(path);
       me.svgPath = me.vpath.toSVG(paper);
-      me.svgPath.data('path', me);
       if (map.styles == null) {
-        if (Raphael.svg) {
-          me.svgPath.node.setAttribute('class', layer_id);
-        }
+        me.svgPath.node.setAttribute('class', layer_id);
       } else {
         map.applyCSS(me.svgPath, layer_id);
       }
@@ -1603,28 +1573,23 @@
   */
 
 
-  geom = (_ref4 = kartograph.geom) != null ? _ref4 : kartograph.geom = {};
+  if ((_ref4 = kartograph.geom) == null) {
+    kartograph.geom = {};
+  }
 
   Path = (function() {
     /*
     	represents complex polygons (aka multi-polygons)
     */
     function Path(type, contours, closed) {
-      var cnt, self, _i, _len;
+      var self;
 
       if (closed == null) {
         closed = true;
       }
       self = this;
       self.type = type;
-      self.contours = [];
-      for (_i = 0, _len = contours.length; _i < _len; _i++) {
-        cnt = contours[_i];
-        if (!__is_clockwise(cnt)) {
-          cnt.reverse();
-        }
-        self.contours.push(cnt);
-      }
+      self.contours = contours;
       self.closed = closed;
     }
 
@@ -1669,7 +1634,7 @@
     };
 
     Path.prototype.area = function() {
-      var area, cnt, me, _i, _len, _ref5;
+      var area, cnt, i, me, _i, _j, _len, _ref5, _ref6;
 
       me = this;
       if (me.areas != null) {
@@ -1680,7 +1645,12 @@
       _ref5 = me.contours;
       for (_i = 0, _len = _ref5.length; _i < _len; _i++) {
         cnt = _ref5[_i];
-        area = __area(cnt);
+        area = 0;
+        for (i = _j = 0, _ref6 = cnt.length - 2; 0 <= _ref6 ? _j <= _ref6 : _j >= _ref6; i = 0 <= _ref6 ? ++_j : --_j) {
+          area += cnt[i][0] * cnt[i + 1][1] - cnt[i + 1][0] * cnt[i][1];
+        }
+        area *= .5;
+        area = area;
         me.areas.push(area);
         me._area += area;
       }
@@ -1700,11 +1670,6 @@
         cnt_orig = me.contours[i];
         cnt = [];
         l = cnt_orig.length;
-        a = me.areas[i];
-        k = a / area;
-        if (k === 0) {
-          continue;
-        }
         for (j = _j = 0, _ref6 = l - 1; 0 <= _ref6 ? _j <= _ref6 : _j >= _ref6; j = 0 <= _ref6 ? ++_j : --_j) {
           p0 = cnt_orig[j];
           p1 = cnt_orig[(j + 1) % l];
@@ -1724,6 +1689,7 @@
             }
           }
         }
+        a = me.areas[i];
         x = y = x_ = y_ = 0;
         l = cnt.length;
         _lengths = [];
@@ -1743,6 +1709,7 @@
           x += w * p0[0];
           y += w * p0[1];
         }
+        k = a / area;
         cx += x * k;
         cy += y * k;
       }
@@ -1780,7 +1747,7 @@
       this.x = x;
       this.y = y;
       this.r = r;
-      Circle.__super__.constructor.call(this, 'circle', [], true);
+      Circle.__super__.constructor.call(this, 'circle', null, true);
     }
 
     Circle.prototype.toSVG = function(paper) {
@@ -1815,7 +1782,7 @@
     	loads a path from a SVG path string
     */
 
-    var closed, cmd, contour, contours, cx, cy, path_data, path_str, r, res, sep, type, _i, _len;
+    var closed, cmd, contour, contours, cx, cy, last_cmd, path_data, path_str, r, res, sep, type, _i, _len;
 
     contours = [];
     type = path.nodeName;
@@ -1823,7 +1790,8 @@
     if (type === "path") {
       path_str = path.getAttribute('d').trim();
       path_data = Raphael.parsePathString(path_str);
-      closed = path_data[path_data.length - 1] === "Z";
+      last_cmd = path_data[path_data.length - 1][0] || path_data[path_data.length - 1]
+      closed = last_cmd == "Z";
       sep = closed ? "Z M" : "M";
       contour = [];
       for (_i = 0, _len = path_data.length; _i < _len; _i++) {
@@ -1846,16 +1814,16 @@
           }
         }
       }
-      if (contour.length >= 2) {
+      if (contour.length > 2) {
         contours.push(contour);
         contour = [];
       }
-      res = new geom.Path(type, contours, closed);
+      res = new kartograph.geom.Path(type, contours, closed);
     } else if (type === "circle") {
       cx = path.getAttribute("cx");
       cy = path.getAttribute("cy");
       r = path.getAttribute("r");
-      res = new geom.Circle(cx, cy, r);
+      res = new kartograph.geom.Circle(cx, cy, r);
     }
     return res;
   };
@@ -1872,7 +1840,7 @@
       var clip, err, i, last_in, lines, p0x, p0y, p1x, p1y, pts, self, x0, x1, y0, y1, _i, _ref5, _ref6, _ref7, _ref8;
 
       self = this;
-      clip = new geom.clipping.CohenSutherland().clip;
+      clip = new kartograph.geom.clipping.CohenSutherland().clip;
       pts = [];
       lines = [];
       last_in = false;
@@ -1947,25 +1915,6 @@
     return Math.abs(angle) >= pi;
   };
 
-  __is_clockwise = function(contour) {
-    return __area(contour) > 0;
-  };
-
-  __area = function(contour) {
-    var i, n, s, x1, x2, y1, y2, _i;
-
-    s = 0;
-    n = contour.length;
-    for (i = _i = 0; 0 <= n ? _i < n : _i > n; i = 0 <= n ? ++_i : --_i) {
-      x1 = contour[i][0];
-      y1 = contour[i][1];
-      x2 = contour[(i + 1) % n][0];
-      y2 = contour[(i + 1) % n][1];
-      s += x1 * y2 - x2 * y1;
-    }
-    return s *= 0.5;
-  };
-
   /*
       kartograph - a svg mapping library
       Copyright (C) 2011  Gregor Aisch
@@ -1985,7 +1934,7 @@
   */
 
 
-  proj = kartograph.proj = root.kartograph.proj = {};
+  __proj = kartograph.proj = {};
 
   Function.prototype.bind = function(scope) {
     var _function;
@@ -2083,7 +2032,7 @@
 
       p = this.project.bind(this);
       sea = this.sea();
-      bbox = new BBox();
+      bbox = new kartograph.BBox();
       for (_i = 0, _len = sea.length; _i < _len; _i++) {
         s = sea[_i];
         bbox.update(s[0], s[1]);
@@ -2107,7 +2056,7 @@
     reconstructs a projection from xml description
     */
 
-    var attr, i, id, opts, prj, _i, _ref5;
+    var attr, i, id, opts, proj, _i, _ref5;
 
     id = xml.getAttribute('id');
     opts = {};
@@ -2117,12 +2066,9 @@
         opts[attr.name] = attr.value;
       }
     }
-    if (proj[id] == null) {
-      throw 'unknown projection ' + id;
-    }
-    prj = new proj[id](opts);
-    prj.name = id;
-    return prj;
+    proj = new kartograph.proj[id](opts);
+    proj.name = id;
+    return proj;
   };
 
   kartograph.Proj = Proj;
@@ -2206,7 +2152,7 @@
 
   })(Cylindrical);
 
-  proj['lonlat'] = Equirectangular;
+  __proj['lonlat'] = Equirectangular;
 
   CEA = (function(_super) {
     __extends(CEA, _super);
@@ -2243,7 +2189,7 @@
 
   })(Cylindrical);
 
-  proj['cea'] = CEA;
+  __proj['cea'] = CEA;
 
   GallPeters = (function(_super) {
     __extends(GallPeters, _super);
@@ -2266,7 +2212,7 @@
 
   })(CEA);
 
-  proj['gallpeters'] = GallPeters;
+  __proj['gallpeters'] = GallPeters;
 
   HoboDyer = (function(_super) {
     __extends(HoboDyer, _super);
@@ -2289,7 +2235,7 @@
 
   })(CEA);
 
-  proj['hobodyer'] = HoboDyer;
+  __proj['hobodyer'] = HoboDyer;
 
   Behrmann = (function(_super) {
     __extends(Behrmann, _super);
@@ -2312,7 +2258,7 @@
 
   })(CEA);
 
-  proj['behrmann'] = Behrmann;
+  __proj['behrmann'] = Behrmann;
 
   Balthasart = (function(_super) {
     __extends(Balthasart, _super);
@@ -2335,7 +2281,7 @@
 
   })(CEA);
 
-  proj['balthasart'] = Balthasart;
+  __proj['balthasart'] = Balthasart;
 
   Mercator = (function(_super) {
     __extends(Mercator, _super);
@@ -2370,7 +2316,7 @@
 
   })(Cylindrical);
 
-  proj['mercator'] = Mercator;
+  __proj['mercator'] = Mercator;
 
   PseudoCylindrical = (function(_super) {
     __extends(PseudoCylindrical, _super);
@@ -2445,7 +2391,7 @@
 
   })(PseudoCylindrical);
 
-  proj['naturalearth'] = NaturalEarth;
+  __proj['naturalearth'] = NaturalEarth;
 
   Robinson = (function(_super) {
     __extends(Robinson, _super);
@@ -2505,7 +2451,7 @@
 
   })(PseudoCylindrical);
 
-  proj['robinson'] = Robinson;
+  __proj['robinson'] = Robinson;
 
   EckertIV = (function(_super) {
     __extends(EckertIV, _super);
@@ -2566,7 +2512,7 @@
 
   })(PseudoCylindrical);
 
-  proj['eckert4'] = EckertIV;
+  __proj['eckert4'] = EckertIV;
 
   Sinusoidal = (function(_super) {
     __extends(Sinusoidal, _super);
@@ -2599,7 +2545,7 @@
 
   })(PseudoCylindrical);
 
-  proj['sinusoidal'] = Sinusoidal;
+  __proj['sinusoidal'] = Sinusoidal;
 
   Mollweide = (function(_super) {
     __extends(Mollweide, _super);
@@ -2679,7 +2625,7 @@
 
   })(PseudoCylindrical);
 
-  proj['mollweide'] = Mollweide;
+  __proj['mollweide'] = Mollweide;
 
   WagnerIV = (function(_super) {
     __extends(WagnerIV, _super);
@@ -2699,7 +2645,7 @@
 
   })(Mollweide);
 
-  proj['wagner4'] = WagnerIV;
+  __proj['wagner4'] = WagnerIV;
 
   WagnerV = (function(_super) {
     __extends(WagnerV, _super);
@@ -2719,7 +2665,7 @@
 
   })(Mollweide);
 
-  proj['wagner5'] = WagnerV;
+  __proj['wagner5'] = WagnerV;
 
   Loximuthal = (function(_super) {
     var maxLat, minLat;
@@ -2761,7 +2707,7 @@
 
   })(PseudoCylindrical);
 
-  proj['loximuthal'] = Loximuthal;
+  __proj['loximuthal'] = Loximuthal;
 
   CantersModifiedSinusoidalI = (function(_super) {
     var C1, C3, C3x3, C5, C5x5;
@@ -2814,7 +2760,7 @@
 
   })(PseudoCylindrical);
 
-  proj['canters1'] = CantersModifiedSinusoidalI;
+  __proj['canters1'] = CantersModifiedSinusoidalI;
 
   Hatano = (function(_super) {
     var CN, CS, EPS, FXC, FYCN, FYCS, NITER, ONETOL, RCN, RCS, RXC, RYCN, RYCS;
@@ -2877,7 +2823,7 @@
 
   })(PseudoCylindrical);
 
-  proj['hatano'] = Hatano;
+  __proj['hatano'] = Hatano;
 
   GoodeHomolosine = (function(_super) {
     __extends(GoodeHomolosine, _super);
@@ -2913,7 +2859,7 @@
 
   })(PseudoCylindrical);
 
-  proj['goodehomolosine'] = GoodeHomolosine;
+  __proj['goodehomolosine'] = GoodeHomolosine;
 
   Nicolosi = (function(_super) {
     var EPS;
@@ -2992,14 +2938,14 @@
       var r;
 
       r = this.r;
-      return new BBox(-r, -r, r * 2, r * 2);
+      return new kartograph.BBox(-r, -r, r * 2, r * 2);
     };
 
     return Nicolosi;
 
   })(PseudoCylindrical);
 
-  proj['nicolosi'] = Nicolosi;
+  __proj['nicolosi'] = Nicolosi;
 
   Azimuthal = (function(_super) {
     __extends(Azimuthal, _super);
@@ -3078,7 +3024,7 @@
       var r;
 
       r = this.r;
-      return new BBox(0, 0, r * 2, r * 2);
+      return new kartograph.BBox(0, 0, r * 2, r * 2);
     };
 
     return Azimuthal;
@@ -3120,7 +3066,7 @@
 
   })(Azimuthal);
 
-  proj['ortho'] = Orthographic;
+  __proj['ortho'] = Orthographic;
 
   LAEA = (function(_super) {
     __extends(LAEA, _super);
@@ -3166,83 +3112,7 @@
 
   })(Azimuthal);
 
-  proj['laea'] = LAEA;
-
-  LAEA_Alaska = (function(_super) {
-    __extends(LAEA_Alaska, _super);
-
-    function LAEA_Alaska() {
-      var opts;
-
-      opts = {
-        lon0: -150,
-        lat0: 90
-      };
-      LAEA_Alaska.__super__.constructor.call(this, opts);
-      this.scale = Math.sqrt(2) * 0.5 * 0.33;
-    }
-
-    return LAEA_Alaska;
-
-  })(LAEA);
-
-  LAEA_Hawaii = (function(_super) {
-    __extends(LAEA_Hawaii, _super);
-
-    function LAEA_Hawaii(opts) {
-      opts = {
-        lon0: -157,
-        lat0: 20
-      };
-      LAEA_Hawaii.__super__.constructor.call(this, opts);
-    }
-
-    return LAEA_Hawaii;
-
-  })(LAEA);
-
-  LAEA_USA = (function(_super) {
-    __extends(LAEA_USA, _super);
-
-    function LAEA_USA(opts) {
-      opts.lon0 = -100;
-      opts.lat0 = 45;
-      LAEA_USA.__super__.constructor.call(this, opts);
-      this.laea_alaska = new LAEA_Alaska();
-      this.laea_hawaii = new LAEA_Hawaii();
-    }
-
-    LAEA_USA.prototype.project = function(lon, lat) {
-      var alaska, hawaii, x, y, _ref11, _ref12, _ref13;
-
-      alaska = lat > 44 && (lon < -127 || lon > 170);
-      hawaii = lon < -127 && lat < 44;
-      if (alaska) {
-        if (lon > 170) {
-          lon -= 380;
-        }
-        _ref11 = this.laea_alaska.project(lon, lat), x = _ref11[0], y = _ref11[1];
-      } else if (hawaii) {
-        _ref12 = this.laea_hawaii.project(lon, lat), x = _ref12[0], y = _ref12[1];
-      } else {
-        _ref13 = LAEA_USA.__super__.project.call(this, lon, lat), x = _ref13[0], y = _ref13[1];
-      }
-      if (alaska) {
-        x += -180;
-        y += 100;
-      }
-      if (hawaii) {
-        y += 220;
-        x += -80;
-      }
-      return [x, y];
-    };
-
-    return LAEA_USA;
-
-  })(LAEA);
-
-  proj['laea-usa'] = LAEA_USA;
+  __proj['laea'] = LAEA;
 
   Stereographic = (function(_super) {
     __extends(Stereographic, _super);
@@ -3283,7 +3153,7 @@
 
   })(Azimuthal);
 
-  proj['stereo'] = Stereographic;
+  __proj['stereo'] = Stereographic;
 
   Satellite = (function(_super) {
     __extends(Satellite, _super);
@@ -3352,8 +3222,8 @@
       cos_tilt = cos(this.tilt);
       sin_tilt = sin(this.tilt);
       H = ra * (this.dist - 1);
-      A = ((yo * cos_up + xo * sin_up) * sin(this.tilt) / H) + cos_tilt;
-      xt = (xo * cos_up - yo * sin_up) * cos(this.tilt) / A;
+      A = ((yo * cos_up + xo * sin_up) * sin(this.tilt / H)) + cos_tilt;
+      xt = (xo * cos_up - yo * sin_up) * cos(this.tilt / A);
       yt = (yo * cos_up + xo * sin_up) / A;
       x = r + xt;
       y = r + yt;
@@ -3386,7 +3256,7 @@
 
   })(Azimuthal);
 
-  proj['satellite'] = Satellite;
+  __proj['satellite'] = Satellite;
 
   EquidistantAzimuthal = (function(_super) {
     __extends(EquidistantAzimuthal, _super);
@@ -3433,7 +3303,7 @@
 
   })(Azimuthal);
 
-  proj['equi'] = EquidistantAzimuthal;
+  __proj['equi'] = EquidistantAzimuthal;
 
   Aitoff = (function(_super) {
     var COSPHI1;
@@ -3495,7 +3365,7 @@
 
   })(PseudoCylindrical);
 
-  proj['aitoff'] = Aitoff;
+  __proj['aitoff'] = Aitoff;
 
   Winkel3 = (function(_super) {
     __extends(Winkel3, _super);
@@ -3511,7 +3381,7 @@
 
   })(Aitoff);
 
-  proj['winkel3'] = Winkel3;
+  __proj['winkel3'] = Winkel3;
 
   Conic = (function(_super) {
     __extends(Conic, _super);
@@ -3613,7 +3483,7 @@
 
   })(Conic);
 
-  proj['lcc'] = LCC;
+  __proj['lcc'] = LCC;
 
   PseudoConic = (function(_super) {
     __extends(PseudoConic, _super);
@@ -3704,13 +3574,13 @@
           }
           contours.push(cont);
         }
-        new_path = new geom.Path(path.type, contours, path.closed);
+        new_path = new kartograph.geom.Path(path.type, contours, path.closed);
         new_path._bbox = bbox;
         return new_path;
       } else if (path.type === "circle") {
         _ref17 = me.project(path.x, path.y), x = _ref17[0], y = _ref17[1];
         r = path.r * me.scale;
-        return new geom.Circle(x, y, r);
+        return new kartograph.geom.Circle(x, y, r);
       }
     };
 
@@ -3718,7 +3588,7 @@
       var me;
 
       me = this;
-      return new BBox(0, 0, me.width, me.height);
+      return new kartograph.BBox(0, 0, me.width, me.height);
     };
 
     return View;
@@ -3737,10 +3607,10 @@
     pad = Number(xml.getAttribute('padding'));
     bbox_xml = xml.getElementsByTagName('bbox')[0];
     bbox = BBox.fromXML(bbox_xml);
-    return new View(bbox, w, h, pad);
+    return new kartograph.View(bbox, w, h, pad);
   };
 
-  root.kartograph.View = View;
+  kartograph.View = View;
 
   /*
       kartograph - a svg mapping library
@@ -3761,7 +3631,7 @@
   */
 
 
-  Kartograph.prototype.dotgrid = function(opts) {
+  kartograph.Kartograph.prototype.dotgrid = function(opts) {
     var anim, data, data_col, data_key, delay, dly, dotgrid, dotstyle, ds, dur, f, g, gridsize, id, layer, layer_id, me, path, pathData, paths, pd, row, size, sizes, x, y, _i, _j, _k, _l, _len, _len1, _len2, _len3, _m, _n, _ref14, _ref15, _ref16, _ref17, _ref18, _ref19, _ref20, _ref21, _ref22, _ref23, _ref24, _ref25, _ref26;
 
     me = this;
@@ -3913,7 +3783,7 @@
     return el;
   };
 
-  Kartograph.prototype.addFilter = function(id, type, params) {
+  kartograph.Kartograph.prototype.addFilter = function(id, type, params) {
     var doc, fltr, me;
 
     if (params == null) {
@@ -3922,7 +3792,7 @@
     me = this;
     doc = window.document;
     if (kartograph.filter[type] != null) {
-      fltr = new filter[type](params).getFilter(id);
+      fltr = new kartograph.filter[type](params).getFilter(id);
     } else {
       throw 'unknown filter type ' + type;
     }
@@ -4217,7 +4087,7 @@
   */
 
 
-  Kartograph.prototype.addGeoPath = function(points, cmds, className) {
+  kartograph.Kartograph.prototype.addGeoPath = function(points, cmds, className) {
     var me, path, path_str;
 
     if (cmds == null) {
@@ -4238,7 +4108,7 @@
     return path;
   };
 
-  Kartograph.prototype.getGeoPathStr = function(points, cmds) {
+  kartograph.Kartograph.prototype.getGeoPathStr = function(points, cmds) {
     var cmd, i, me, path_str, pt, xy, _ref17;
 
     if (cmds == null) {
@@ -4267,7 +4137,7 @@
     return path_str;
   };
 
-  Kartograph.prototype.addGeoPolygon = function(points, className) {
+  kartograph.Kartograph.prototype.addGeoPolygon = function(points, className) {
     /* converts a set of
     */
 
@@ -4475,25 +4345,25 @@
 
   })(Scale);
 
-  scale = root.kartograph.scale = {};
+  kartograph.scale = {};
 
-  scale.identity = function(s) {
+  kartograph.scale.identity = function(s) {
     return new Scale(domain, prop, filter).rangedScale;
   };
 
-  scale.linear = function(domain, prop, filter) {
+  kartograph.scale.linear = function(domain, prop, filter) {
     return new LinearScale(domain, prop, filter).rangedScale;
   };
 
-  scale.log = function(domain, prop, filter) {
+  kartograph.scale.log = function(domain, prop, filter) {
     return new LogScale(domain, prop, filter).rangedScale;
   };
 
-  scale.sqrt = function(domain, prop, filter) {
+  kartograph.scale.sqrt = function(domain, prop, filter) {
     return new SqrtScale(domain, prop, filter).rangedScale;
   };
 
-  scale.quantile = function(domain, prop, filter) {
+  kartograph.scale.quantile = function(domain, prop, filter) {
     return new QuantileScale(domain, prop, filter).rangedScale;
   };
 
@@ -4670,7 +4540,7 @@
       SymbolType = me.type;
       ll = me._evaluate(me.location, data, key);
       if (__type(ll) === 'array') {
-        ll = new LonLat(ll[0], ll[1]);
+        ll = new kartograph.LonLat(ll[0], ll[1]);
       }
       sprops = {
         layers: me.layers,
@@ -5123,7 +4993,7 @@
 
   kartograph.SymbolGroup = SymbolGroup;
 
-  Kartograph.prototype.addSymbols = function(opts) {
+  kartograph.Kartograph.prototype.addSymbols = function(opts) {
     opts.map = this;
     return new SymbolGroup(opts);
   };
@@ -5495,7 +5365,7 @@ function kdtree() {
 
   Bubble.layers = [];
 
-  root.kartograph.Bubble = Bubble;
+  kartograph.Bubble = Bubble;
 
   /*
       kartograph - a svg mapping library 
@@ -5588,7 +5458,7 @@ function kdtree() {
 
   Icon.layers = [];
 
-  root.kartograph.Icon = Icon;
+  kartograph.Icon = Icon;
 
   /*
       kartograph - a svg mapping library
@@ -5667,7 +5537,7 @@ function kdtree() {
 
   SvgLabel.layers = [];
 
-  root.kartograph.Label = SvgLabel;
+  kartograph.Label = SvgLabel;
 
   HtmlLabel = (function(_super) {
     __extends(HtmlLabel, _super);
@@ -5678,7 +5548,7 @@ function kdtree() {
       me = this;
       HtmlLabel.__super__.constructor.call(this, opts);
       me.text = (_ref21 = opts.text) != null ? _ref21 : '';
-      me.css = (_ref22 = opts.css) != null ? _ref22 : '';
+      me.style = (_ref22 = opts.style) != null ? _ref22 : '';
       me["class"] = (_ref23 = opts["class"]) != null ? _ref23 : '';
     }
 
@@ -5688,9 +5558,9 @@ function kdtree() {
       me = this;
       l = $('<div>' + me.text + '</div>');
       l.css({
-        width: '80px',
+        width: '50px',
         position: 'absolute',
-        left: '-40px',
+        left: '-25px',
         'text-align': 'center'
       });
       me.lbl = lbl = $('<div class="label" />');
@@ -5708,12 +5578,11 @@ function kdtree() {
       var me;
 
       me = this;
-      me.lbl.css({
+      return me.lbl.css({
         position: 'absolute',
         left: me.x + 'px',
         top: me.y + 'px'
       });
-      return me.lbl.css(me.css);
     };
 
     HtmlLabel.prototype.clear = function() {
@@ -5735,7 +5604,7 @@ function kdtree() {
 
   })(kartograph.Symbol);
 
-  HtmlLabel.props = ['text', 'css', 'class'];
+  HtmlLabel.props = ['text', 'style', 'class'];
 
   HtmlLabel.layers = [
     {
@@ -5744,7 +5613,7 @@ function kdtree() {
     }
   ];
 
-  root.kartograph.HtmlLabel = HtmlLabel;
+  kartograph.HtmlLabel = HtmlLabel;
 
   /*
       kartograph - a svg mapping library
@@ -5868,7 +5737,7 @@ function kdtree() {
 
   LabeledBubble.layers = [];
 
-  root.kartograph.LabeledBubble = LabeledBubble;
+  kartograph.LabeledBubble = LabeledBubble;
 
   /*
       kartograph - a svg mapping library
@@ -6007,7 +5876,7 @@ function kdtree() {
 
   PieChart.layers = [];
 
-  root.kartograph.PieChart = PieChart;
+  kartograph.PieChart = PieChart;
 
   /*
   pie chart extension for RaphaelJS
@@ -6251,6 +6120,6 @@ drawStackedBars = function (cx, cy, w, h, values, labels, colors, stroke) {
 
   StackedBarChart.layers = [];
 
-  root.kartograph.StackedBarChart = StackedBarChart;
+  kartograph.StackedBarChart = StackedBarChart;
 
 }).call(this);
