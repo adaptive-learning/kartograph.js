@@ -1354,6 +1354,12 @@
       }
       uid = 'path_' + map_layer_path_uid++;
       me.svgPath.node.setAttribute('id', uid);
+      if (svg_path.attributes.hasOwnProperty('data-code')) {
+        me.svgPath.node.setAttribute('data-code', svg_path.attributes['data-code'].nodeValue);
+      }
+      if (svg_path.attributes.hasOwnProperty('data-name')) {
+        me.svgPath.node.setAttribute('data-name', svg_path.attributes['data-name'].nodeValue);
+      }
       map.pathById[uid] = me;
       data = {};
       for (i = _i = 0, _ref4 = svg_path.attributes.length - 1; 0 <= _ref4 ? _i <= _ref4 : _i >= _ref4; i = 0 <= _ref4 ? ++_i : --_i) {
